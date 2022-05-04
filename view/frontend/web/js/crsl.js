@@ -81,6 +81,7 @@ define([
             } else {
                 this.elements.track = createE('div',this.config.applied.trackClassName, this.elements.slideParent);
                 this.elements.wrapper = createE('div',this.config.applied.containerClassName, this.elements.track);
+                this.elements.track.style.overflowY='scroll';
             }
             
             this.elements.slideParent.classList.add(this.config.applied.slideParentClassName);
