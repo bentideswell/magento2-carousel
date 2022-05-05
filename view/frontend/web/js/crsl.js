@@ -28,6 +28,11 @@ define([
             if (this.init(config, slideParent)) {
                 this.buildElements(slideParent);
                 this.rebuildBasedOnView();
+                
+                if (this.config.applied.autoplaySpeed) {
+                    setInterval(this.goToNext.bind(this), this.config.applied.autoplaySpeed);
+                }
+                
                 window.addEventListener('fishpig:crsl:resize', this.rebuildBasedOnView.bind(this));
             }
         }
@@ -46,7 +51,10 @@ define([
                     containerClassName: 'crsl-cont',
                     ctrlClassName: 'crsl-ctrl',
                     slideParentClassName: 'crsl',
-                    scrollType: 'position' // || scrollLeft
+                    scrollType: 'position', // || scrollLeft
+                    slideSpeed: '.25s', // Only works if scrollType === position
+                    infinite: false,
+                    autoplaySpeed: null
                 },
                 instance: config,
                 responsive: typeof config.responsive !== 'undefined' ? config.responsive : [],
@@ -108,28 +116,11 @@ define([
 
         // Event for clicking control
         Crsl.prototype.onControlClickEvent = function() {
-            var elem = event.target.tagName === 'SPAN' ? event.target.parentNode : event.target;
-            var action = elem.getAttribute('data-action');
-            var targetIndex = null;
-
+            var action = (event.target.tagName === 'SPAN' ? event.target.parentNode : event.target).getAttribute('data-action');
             if (action === 'next') {
-                for (var i = 0; i <= this.slides.length; i++) {
-                    if ((this.slides[i].getBoundingClientRect().left - this.data.wrapperRect.left) > 0) {
-                        targetIndex = i + (this.config.applied.slidesToScroll-1);
-                        break;
-                    }
-                }
+                return this.goToNext();
             } else if (action === 'previous') {
-                for (var i = this.slides.length - 1; i >= 0; i--) {   
-                    if ((this.slides[i].getBoundingClientRect().left - this.data.wrapperRect.left) < 0) {
-                        targetIndex = i - (this.config.applied.slidesToScroll-1);
-                        break;
-                    }
-                }
-            }
-            
-            if (targetIndex !== null) {
-                this.goTo(targetIndex);
+                return this.goToPrevious();
             }
         };
         
@@ -144,11 +135,10 @@ define([
                         x += parseInt(this.elements.slideParent.style.left) * -1;
                     }
 
-                    this.elements.slideParent.style.transition = 'left .25s ease-in-out';
+                    this.elements.slideParent.style.transition = 'left ' + this.config.applied.slideSpeed + ' ease-in-out';
                     this.elements.slideParent.style.position='relative';
                     this.elements.slideParent.style.left = (x*-1)+'px';
                 } else {
-                    
                     x += this.elements.track.scrollLeft;
                     this.elements.track.scroll({
                         left: x,
@@ -158,6 +148,40 @@ define([
             }
         };
 
+        // Go to the next slide.
+        // If infinite and at the end, go back to start
+        Crsl.prototype.goToNext = function() {
+            for (var i = 0; i < this.slides.length; i++) {
+                if ((this.slides[i].getBoundingClientRect().left - this.data.wrapperRect.left) > 0) {
+                    return this.goTo(i + (this.config.applied.slidesToScroll-1));
+                }
+            }
+
+            if (this.config.applied.infinite === true) {
+                return this.goToStart();
+            }
+        };
+        
+        // Go to the previous slide
+        // If already on first slide, do nothing
+        Crsl.prototype.goToPrevious = function() {
+            for (var i = this.slides.length - 1; i >= 0; i--) {   
+                if ((this.slides[i].getBoundingClientRect().left - this.data.wrapperRect.left) < 0) {
+                    return this.goTo(i - (this.config.applied.slidesToScroll-1));
+                }
+            }
+        };
+
+        // Go to the start, directly, do not pass go.
+        Crsl.prototype.goToStart = function() {
+            // Reset scroller
+            if (this.config.applied.scrollType === 'position') {
+                this.elements.slideParent.style.left = '0';   
+            } else {
+                this.elements.track.scroll({left: 0});
+            }
+        };
+        
         // Resets and rebuild
         Crsl.prototype.rebuildBasedOnView = function() {
             // Regenerate config from defauts and user config
@@ -172,11 +196,12 @@ define([
             }
 
             // Reset scroller
-            if (this.config.applied.scrollType === 'position') {
-                this.elements.slideParent.style.left = '0';   
-            } else {
-                this.elements.track.scroll({left: 0});
+            if (this.config.applied.scrollType !== 'position') {
+                // No infinity if manual scrolling allowed
+                this.config.applied.infinite = false;
             }
+                
+            this.goToStart();
 
             // Reset data
             this.data = this.data || {};
