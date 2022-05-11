@@ -45,6 +45,7 @@ define([
                     slidesToScroll: 1,
                     resizeInterval: 250,
                     slideClassName: 'slide',
+                    slideGap: 10,
                     injectControls: true,
                     innerClassName: 'crsl-inner',
                     trackClassName: 'crsl-track',
@@ -67,8 +68,21 @@ define([
 
             this.slides = [];
 
+            var slideContents = [];
             [].forEach.call(slideParent.childNodes, function(n) {
                 if (n.nodeType === Node.ELEMENT_NODE) {
+                    slideContents.push(n);
+                }
+            }.bind(this));
+            
+            [].forEach.call(slideContents, function(n) {
+                if (true) {
+                    var slide = document.createElement('div');
+                        slide.classList.add(this.config.applied.slideClassName);                
+                    n.parentNode.insertBefore(slide, n);
+                    slide.appendChild(n);
+                    this.slides.push(slide);
+                } else {
                     this.slides.push(n);
                     n.classList.add(this.config.applied.slideClassName);
                 }
@@ -206,12 +220,25 @@ define([
             // Reset data
             this.data = this.data || {};
             this.data.wrapperRect  = this.elements.wrapper.getBoundingClientRect();
+            
+            /*
             this.data.itemWidth = Math.round((
                 this.elements.wrapper.clientWidth 
                 - (
                     parseInt(window.getComputedStyle(this.slides[0]).marginRight) * (this.config.applied.slidesToShow - 1)
                 )
-            ) / this.config.applied.slidesToShow);
+            ) / this.config.applied.slidesToShow);*/
+            
+            if (this.config.applied.slidesToShow > 1) {
+                this.data.itemWidth = Math.round(((this.elements.wrapper.clientWidth 
+                                      - (
+                                            this.config.applied.slideGap * (this.config.applied.slidesToShow - 1)
+                                        )) / this.config.applied.slidesToShow) * 100) / 100;
+            } else {
+                this.data.itemWidth = this.elements.wrapper.clientWidth;
+                this.config.applied.slideGap = 0;
+            }
+            
             this.data.canSlide = this.slides.length > this.config.applied.slidesToShow;
             this.data.maxIndex = this.data.canSlide ? this.slides.length - this.config.applied.slidesToShow : 0;
 
@@ -219,11 +246,12 @@ define([
 
             for (var i in this.slides) {
                 this.slides[i].style.width=this.data.itemWidth+'px';
-                var s = window.getComputedStyle(this.slides[i]);
-                totalWidth += parseInt(s.marginLeft) + parseInt(s.marginRight);
+                this.slides[i].style.marginRight=this.config.applied.slideGap+'px';
+                totalWidth += this.config.applied.slideGap;
             }
 
-            this.elements.slideParent.style.width=totalWidth+'px';
+            this.slides[this.slides.length-1].style.marginRight=null;
+            this.elements.slideParent.style.width=Math.round(totalWidth-this.config.applied.slideGap + 0.4)+'px';
         };
 
         return Crsl;
