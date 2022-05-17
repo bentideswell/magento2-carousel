@@ -37,7 +37,7 @@
                 content: "";
                 display: block;
                 height: 20px;
-                left: 50%;
+                left: ~"calc(50% - 1px)";
                 position: absolute;
                 transform: translate(-50%,-50%);
                 top: 50%;
@@ -53,11 +53,26 @@
 
             & span {
                 &:after {
+                    left: ~"calc(50% + 1px)";
                     transform: scale(-1, -1) translate(-50%,-50%);
                     transform-origin: top left;
                 }
             }
         }
     }
-
+    
+    .crsl-cont.-ctrl-s {
+        & .crsl-ctrl {
+            height: 34px;
+            line-height: 34px;
+            width: 34px;
+    
+            & span {
+                &:after {        
+                    height: 14px;
+                    width: 14px;
+                }
+            }
+        }
+    }
 }

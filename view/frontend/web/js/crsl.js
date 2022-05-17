@@ -52,6 +52,7 @@ define([
                     containerClassName: 'crsl-cont',
                     ctrlClassName: 'crsl-ctrl',
                     slideParentClassName: 'crsl',
+                    wrapperClassNames: [],
                     scrollType: 'position', // || scrollLeft
                     slideSpeed: '.25s', // Only works if scrollType === position
                     infinite: false,
@@ -104,6 +105,12 @@ define([
                 this.elements.track = createE('div',this.config.applied.trackClassName, this.elements.slideParent);
                 this.elements.wrapper = createE('div',this.config.applied.containerClassName, this.elements.track);
                 this.elements.track.style.overflowY='scroll';
+            }
+
+            if (this.config.applied.wrapperClassNames.length > 0) {
+                for (var c in this.config.applied.wrapperClassNames) {
+                    this.elements.wrapper.classList.add(this.config.applied.wrapperClassNames[c]);
+                }
             }
             
             this.elements.slideParent.classList.add(this.config.applied.slideParentClassName);
