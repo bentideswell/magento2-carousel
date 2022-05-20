@@ -5,6 +5,12 @@
 & when (@media-common = true) {
     .crsl-cont {
         position: relative;
+        
+        &.-no-slide {
+            & .crsl-ctrl {
+                display: none;
+            }   
+        }
     }   
 
     .crsl-track {

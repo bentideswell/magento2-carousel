@@ -52,6 +52,7 @@ define([
                     containerClassName: 'crsl-cont',
                     ctrlClassName: 'crsl-ctrl',
                     slideParentClassName: 'crsl',
+                    nothingToSlideClassName: '-no-slide',
                     wrapperClassNames: [],
                     scrollType: 'position', // || scrollLeft
                     slideSpeed: '.25s', // Only works if scrollType === position
@@ -259,6 +260,12 @@ define([
 
             this.slides[this.slides.length-1].style.marginRight=null;
             this.elements.slideParent.style.width=Math.round(totalWidth-this.config.applied.slideGap + 0.4)+'px';
+            
+            if (this.config.applied.slidesToShow === this.slides.length) {
+                this.elements.wrapper.classList.add(this.config.applied.nothingToSlideClassName);
+            } else {
+                this.elements.wrapper.classList.remove(this.config.applied.nothingToSlideClassName);
+            }
         };
 
         return Crsl;
