@@ -53,6 +53,8 @@ define([
                     ctrlClassName: 'crsl-ctrl',
                     slideParentClassName: 'crsl',
                     nothingToSlideClassName: '-no-slide',
+                    isStartClassName: '-start',
+                    isEndClassName: '-end',
                     wrapperClassNames: [],
                     scrollType: 'position', // || scrollLeft
                     slideSpeed: '.25s', // Only works if scrollType === position
@@ -106,6 +108,8 @@ define([
                 this.elements.track = createE('div',this.config.applied.trackClassName, this.elements.slideParent);
                 this.elements.wrapper = createE('div',this.config.applied.containerClassName, this.elements.track);
                 this.elements.track.style.overflowY='scroll';
+
+                this.elements.track.addEventListener('scroll', debounce(this.applyPositionClasses.bind(this), 150));
             }
 
             if (this.config.applied.wrapperClassNames.length > 0) {
@@ -116,6 +120,8 @@ define([
             
             this.elements.slideParent.classList.add(this.config.applied.slideParentClassName);
             this.elements.slideParent.style.display='block';
+
+            this.applyPositionClasses(0);
 
             // Controls
             if (this.config.applied.injectControls) {
@@ -150,6 +156,7 @@ define([
         Crsl.prototype.goTo = function(index) {
             if (this.data.canSlide && index !== null) {
                 index = Math.max(0, Math.min(Number.parseInt(index), this.data.maxIndex));
+                this.applyPositionClasses(index);
                 var x = this.slides[index].getBoundingClientRect().left - this.data.wrapperRect.left;
                 
                 if (this.config.applied.scrollType === 'position') {
@@ -202,6 +209,8 @@ define([
             } else {
                 this.elements.track.scroll({left: 0});
             }
+
+            this.applyPositionClasses(0);
         };
         
         // Resets and rebuild
@@ -267,7 +276,52 @@ define([
                 this.elements.wrapper.classList.remove(this.config.applied.nothingToSlideClassName);
             }
         };
+        
+        Crsl.prototype.applyPositionClasses = function(index) {
+            console.debug('applyPositionClasses @' + Date.now());
+            
+            var cl = this.elements.wrapper.classList;
 
+            if (this._isIndexStart(index)) {
+                cl.remove(this.config.applied.isEndClassName);
+                cl.add(this.config.applied.isStartClassName);
+            } else if (this._isIndexEnd(index)) {
+                cl.remove(this.config.applied.isStartClassName);
+                cl.add(this.config.applied.isEndClassName);
+            } else {
+                cl.remove(this.config.applied.isStartClassName);
+                cl.remove(this.config.applied.isEndClassName);
+            }
+        };
+
+        Crsl.prototype._isIndexStart = function(index) {
+
+            if (typeof index === 'number') {
+                return parseInt(index) === 0;
+            }
+            
+            // Position scroll won't allow manual scrolling so index is enough
+            if (this.config.applied.scrollType === 'position') {
+                return false;
+            }
+
+            return parseInt(this.elements.track.scrollLeft) === 0;
+        };
+           
+        Crsl.prototype._isIndexEnd = function(index) {
+            console.debug('_isIndexEnd: ' + (typeof index) + ' @' + Date.now());
+            if (typeof index === 'number') {
+                return (parseInt(index) + this.config.applied.slidesToShow) === this.slides.length;
+            }
+
+            // Position scroll won't allow manual scrolling so index is enough
+            if (this.config.applied.scrollType === 'position') {
+                return false;
+            }
+
+            return parseInt(this.elements.track.clientWidth + this.elements.track.scrollLeft)  === parseInt(this.elements.slideParent.clientWidth);
+        };
+        
         return Crsl;
     })();
 

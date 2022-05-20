@@ -11,6 +11,15 @@
                 display: none;
             }   
         }
+        
+
+        &.-end .crsl-ctrl[data-action="next"],
+        &.-start .crsl-ctrl[data-action="previous"] {
+            /*cursor: not-allowed;*/
+            opacity: .0;
+            pointer-events: none;
+            transition: opacity .2s ease-in;
+        }
     }   
 
     .crsl-track {
@@ -35,11 +44,5 @@
             }
         }
 
-        &._end .crsl-ctrl[data-action="next"],
-        &._start .crsl-ctrl[data-action="previous"] {
-            cursor: not-allowed;
-            opacity: .4;
-            transition: opacity .2s ease-in;
-        }
     }
 }
