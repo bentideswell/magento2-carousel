@@ -2,7 +2,7 @@
     "name": "fishpig/magento2-carousel",
     "description": "",
     "type": "magento2-module",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "autoload": {
         "files": [
             "registration.php"
